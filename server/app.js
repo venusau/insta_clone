@@ -23,9 +23,13 @@ const auth = require("./routes/auth.routes");
 const post = require("./routes/post.routes")
 // This line should be written before the route handler, FIRST WE NEED TO PARSE THE REQ INTO JSON FORMAT THEN DO THE ROUTING
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 app.use(auth);
-app.use(post)
-app.use(cors)
+app.use(post);
+app.use(cors);
+
+app.set("view engine", "ejs");
+
 // Custom middleware function
 /*
 const customMiddleware = (req, res, next) => {
@@ -62,7 +66,7 @@ app.get("/about", customMiddleware, (req, res) => {
 */
 
 // Start the server and listen on the specified port
-const PORT = 5000;
+const PORT = 5001;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

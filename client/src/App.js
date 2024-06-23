@@ -12,6 +12,7 @@ import Profile from "./components/screens/Profile";
 import SignIn from "./components/screens/SignIn";
 import Signup from "./components/screens/Signup";
 import CreatePost from "./components/screens/CreatePost";
+import ForgotPassword from "./components/screens/ForgotPassword";
 import { useContext } from "react";
 import "./App.css";
 import { type } from "@testing-library/user-event/dist/type";
@@ -36,6 +37,7 @@ const Routing = () => {
       <Route path="/profile" element={<Profile />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/create" element={<CreatePost />} />
+      <Route path= "/forget-password" element={<ForgotPassword/>}/>
     </Routes>
   );
 };

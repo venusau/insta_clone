@@ -72,40 +72,51 @@ function SignIn() {
   };
 
   return (
-    <>
-      <div className="mycard">
-        <div className="card auth-card input-field">
-          <h2 className="instagram" style={{ color: "black" }}>
-            Instagram
-          </h2>
+    <div className="container" style={{ marginTop: "50px" }}>
+      <div className="card auth-card black">
+        <div className="card-content white-text">
+          <span className="card-title">Sign In</span>
           <form onSubmit={postData}>
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={changeEmail}
-              required
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={changePassword}
-              required
-            />
+            <div className="input-field">
+              <input
+                type="email"
+                id="email"
+                value={email}
+                onChange={changeEmail}
+                required
+                className="white-text"
+                style={{ borderBottom: "1px solid white" }}
+              />
+              <label htmlFor="email" className="white-text">Email</label>
+            </div>
+            <div className="input-field">
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={changePassword}
+                required
+                className="white-text"
+                style={{ borderBottom: "1px solid white" }}
+              />
+              <label htmlFor="password" className="white-text">Password</label>
+            </div>
             <button
-              className="btn waves-effect waves-light #e91e63 pink"
+              className="btn waves-effect waves-light"
               type="submit"
+              style={{ backgroundColor: "#e91e63" }}
             >
-              SignIn
+              Sign In
             </button>
           </form>
           <h5>
-            <NavLink to="/signup">Don't have an account?</NavLink>
+            <NavLink to="/signup" className="white-text">Don't have an account?</NavLink>
+            <br />
+            <NavLink to="/forget-password" className="white-text">Forgot Password?</NavLink>
           </h5>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

@@ -25,6 +25,9 @@ module.exports=(req, res, next)=>{
         // console.log(payload) --> THis was for the understanding 
         const {_id}= payload
         User.findById(_id).then((userdata)=>{
+            if (!userdata){
+                return res.status(422).json({error:"You must be logged in"})
+            }
             req.user = userdata
             next()
         }).catch((err)=>{

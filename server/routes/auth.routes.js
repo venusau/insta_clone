@@ -15,7 +15,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const requireLogin = require("../middleware/requireLogin");
 /*
 router.get('/', (req, res)=>{
-    res.send("hello")
+    res.("hello")
 })
 */
 //  This route is an example to show the we can route users in a separate file, here "auth.routes.js"
@@ -37,12 +37,15 @@ router.get("/protected", requireLogin, (req, res) => {
 
   if (index !== -1) {
     const newName = name.substring(0, index);
-    return res.send(`Hello user: ${newName}`.format(newName));
+    return res.(`Hello user: ${newName}`.format(newName));
   } else {
-    return res.send(`Hello user: ${name}`);
+    return res.(`Hello user: ${name}`);
   }
 });
 */ // -->This is the `/protected` route which is the protercted resource using the 'requireLogin.js' middleware imported in the line 13
+
+// router.set("view engine", "ejs");
+
 
 router.post("/signup", (req, res) => {
   const { name, username, email, password, profilePicUrl } = req.body;
@@ -148,5 +151,96 @@ router.post("/signin", (req, res) => {
       });
   }
 });
+
+router.post("/forget-password", (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(422).json({ error: "You should  the email" });
+  }
+  User.findOne({ email })
+    .then((savedUser) => {
+      if (!savedUser) {
+        return res.status(422).json({ error: "User does not exist" });
+      }
+      const secret = JWT_SECRET + savedUser.password;
+      const token = jwt.sign({ email: savedUser.email, id: savedUser._id }, secret, {
+        expiresIn: "5m"
+      });
+      const link = `http://localhost:5001/reset-password/${savedUser._id}/${token}`;
+      console.log(link);
+      return res.json({ message: "We have sent you a reset password link", link });
+    })
+    .catch(err => {
+      return res.status(500).json({ error: `${err}` });
+    });
+});
+
+
+router.get("/reset-password/:id/:token", (req, res) => {
+  const { id, token } = req.params;
+  User.findOne({ _id: id })
+    .then((savedUser) => {
+      if (!savedUser) {
+        return res.status(422).json({ error: "User does not exist" });
+      }
+      const secret = JWT_SECRET + savedUser.password;
+      try {
+        const verify = jwt.verify(token, secret);
+        res.render("index", { email: verify.email, id: req.params.id, token: req.params.token, status:"Not verified" });
+
+      } catch (e) {
+        console.log(e);
+        return res.status(400).json("Token not verified");
+      }
+    })
+    .catch(err => {
+      res.status(500).json(err);
+    });
+});
+
+
+router.post("/reset-password/:id/:token", async (req, res) => {
+  const { id, token } = req.params;
+  const { password, confirmPassword } = req.body;
+  if (!password || !confirmPassword) {
+    return res.status(422).json({ error: "Both password and confirmPassword fields are required" });
+  }
+
+  if (password !== confirmPassword) {
+    return res.status(422).json({ error: "Both passwords do not match" });
+  }
+
+  try {
+    const savedUser = await User.findOne({ _id: id });
+    if (!savedUser) {
+      return res.status(422).json({ error: "User does not exist" });
+    }
+
+    const secret = JWT_SECRET + savedUser.password;
+    try {
+      const verify = jwt.verify(token, secret);
+
+      const encryptedPassword = await bcrypt.hash(password, 12);
+
+      await User.updateOne(
+        { _id: id },
+        { $set: { password: encryptedPassword } }
+      );
+
+      // res.json({ message: "Password reset successful" });
+
+      res.render("index", { email: verify.email, status:"verified" });
+
+    } catch (e) {
+      console.log(e);
+      return res.status(400).json("Token not verified");
+    }
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+
+
 
 module.exports = router;

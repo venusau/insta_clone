@@ -1,14 +1,16 @@
+import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { useState } from "react";
-// import M from 'materailize-css'
+import { Cloudinary } from "@cloudinary/url-gen";
 
 function Signup() {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
+  const [profilePic, setProfilePic] = useState(null);
+  const [profilePicUrl, setProfilePicUrl] = useState("");
+  const [fileName, setFileName] = useState("");
   const navigate = useNavigate();
-  const [profilePicUrl, setProfilePicUrl] = useState("")
 
   function changeEmail(e) {
     setEmail(e.target.value);
@@ -21,9 +23,11 @@ function Signup() {
   function changePassword(e) {
     setPassword(e.target.value);
   }
+  
   function changeUsername(e) {
     setUsername(e.target.value);
   }
+
   const changeProfileImage = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -42,7 +46,8 @@ function Signup() {
       return;
     }
 
-    setProfilePicUrl(file);
+    setProfilePic(file);
+    setFileName(file.name); // Set the file name
   };
 
   const password_validate = (password) => {
@@ -58,7 +63,30 @@ function Signup() {
     );
   };
 
-  const postData = (e) => {
+  const handleImageUpload = async () => {
+    const formData = new FormData();
+    formData.append("file", profilePic);
+    formData.append("upload_preset", "insta-clone"); // Replace with your preset name
+
+    try {
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/dgrze5guo/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const data = await response.json();
+      return data.secure_url;
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      alert("An error occurred during file upload");
+      return null;
+    }
+  };
+
+  const postData = async (e) => {
     e.preventDefault(); // Prevent default form submission
 
     if (!password_validate(password)) {
@@ -66,6 +94,9 @@ function Signup() {
         "Password should be strong: at least one uppercase letter, one digit, and a length of 8-14 characters."
       );
     }
+
+    const imageUrl = await handleImageUpload();
+    if (!imageUrl) return;
 
     fetch("/signup", {
       method: "POST",
@@ -77,7 +108,7 @@ function Signup() {
         username,
         password,
         email,
-        profilePicUrl
+        profilePicUrl: imageUrl,
       }),
     })
       .then((res) => res.json())
@@ -94,44 +125,64 @@ function Signup() {
         alert("An error occurred while signing up");
       });
   };
+
   return (
     <>
-      <div className="mycard">
-        <div className="card auth-card input-field">
-          <h2 className="instagram" style={{ color: "black" }}>
-            Instagram
-          </h2>
+      <div className="container" style={{ marginTop: "50px" }}>
+      <div className="card auth-card black">
+        <div className="card-content white-text">
+          <span className="card-title">Signup</span>
           <form onSubmit={postData}>
-            <input
-              type="text"
-              placeholder="Name"
-              value={name}
-              onChange={changeName}
-              required
-            />
-            <input
-              type="text"
-              placeholder="Username"
-              value={username}
-              onChange={changeUsername}
-              required
-            />
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={changeEmail}
-              required
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={changePassword}
-              required
-            />
+            <div className="input-field">
+              <input
+                type="text"
+                id="name"
+                value={name}
+                onChange={changeName}
+                required
+                className="white-text"
+                style={{ borderBottom: "1px solid white" }}
+              />
+              <label htmlFor="name" className="white-text">Name</label>
+            </div>
+            <div className="input-field">
+              <input
+                type="text"
+                id="username"
+                value={username}
+                onChange={changeUsername}
+                required
+                className="white-text"
+                style={{ borderBottom: "1px solid white" }}
+              />
+              <label htmlFor="username" className="white-text">Username</label>
+            </div>
+            <div className="input-field">
+              <input
+                type="email"
+                id="email"
+                value={email}
+                onChange={changeEmail}
+                required
+                className="white-text"
+                style={{ borderBottom: "1px solid white" }}
+              />
+              <label htmlFor="email" className="white-text">Email</label>
+            </div>
+            <div className="input-field">
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={changePassword}
+                required
+                className="white-text"
+                style={{ borderBottom: "1px solid white" }}
+              />
+              <label htmlFor="password" className="white-text">Password</label>
+            </div>
             <div className="file-field input-field">
-              <div className="btn waves-effect waves-light #e91e63 pink">
+              <div className="btn waves-effect waves-light" style={{ backgroundColor: "#e91e63" }}>
                 <span>Profile Image</span>
                 <input type="file" onChange={changeProfileImage} />
               </div>
@@ -139,22 +190,26 @@ function Signup() {
                 <input
                   className="file-path validate"
                   type="text"
+                  value={fileName}
+                  readOnly
                   style={{ color: "white" }}
                 />
               </div>
             </div>
             <button
               type="submit"
-              className="btn waves-effect waves-light #e91e63 pink"
+              className="btn waves-effect waves-light"
+              style={{ backgroundColor: "#e91e63" }}
             >
               Signup
             </button>
           </form>
           <h5>
-            <NavLink to="/signin">Already have an account?</NavLink>
+            <NavLink to="/signin" className="white-text">Already have an account?</NavLink>
           </h5>
         </div>
       </div>
+    </div>
     </>
   );
 }
